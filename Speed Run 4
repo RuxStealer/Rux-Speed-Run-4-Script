@@ -1,0 +1,195 @@
+-- Load the Orion UI Library with error handling
+local OrionLib
+local status, err = pcall(function()
+    OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+end)
+
+if not status then
+    warn("Failed to load Orion UI Library: " .. tostring(err))
+    return
+end
+
+-- Create a Window with error handling
+local Window
+status, err = pcall(function()
+    Window = OrionLib:MakeWindow({
+        Name = "Speed Run 4 Script", 
+        HidePremium = false, 
+        SaveConfig = true, 
+        ConfigFolder = "OrionConfigs"
+    })
+end)
+
+if not status then
+    warn("Failed to create the GUI window: " .. tostring(err))
+    return
+end
+
+-- Infinite Jump function wrapped in xpcall
+local function InfiniteJump()
+    local infJumpEnabled = true
+    xpcall(function()
+        game:GetService("UserInputService").JumpRequest:Connect(function()
+            if infJumpEnabled then
+                game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+            end
+        end)
+    end, function(e)
+        warn("Error in Infinite Jump: " .. tostring(e))
+    end)
+end
+
+-- Speed Modification function wrapped in xpcall
+local function SpeedModification()
+    xpcall(function()
+        local player = game:GetService("Players").LocalPlayer
+        local speedMultiplier = 2 -- Default speed multiplier
+
+        player.Character.Humanoid.WalkSpeed = player.Character.Humanoid.WalkSpeed * speedMultiplier
+    end, function(e)
+        warn("Error in Speed Modification: " .. tostring(e))
+    end)
+end
+
+-- Spinbot function wrapped in xpcall
+local function Spinbot()
+    xpcall(function()
+        local spinBotEnabled = false
+        local spinSpeed = 50 -- Default spin speed
+
+        game:GetService("RunService").RenderStepped:Connect(function()
+            if spinBotEnabled then
+                local player = game:GetService("Players").LocalPlayer
+                player.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame() * CFrame.Angles(0, math.rad(spinSpeed), 0))
+            end
+        end)
+    end, function(e)
+        warn("Error in Spinbot: " .. tostring(e))
+    end)
+end
+
+-- Call the functions with pcall
+status, err = pcall(function()
+    InfiniteJump()
+    SpeedModification()
+    Spinbot()
+end)
+
+if not status then
+    warn("Error in initializing functions: " .. tostring(err))
+end
+
+-- Tab for Controls
+local Tab
+status, err = pcall(function()
+    Tab = Window:MakeTab({
+        Name = "Main",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+end)
+
+if not status then
+    warn("Failed to create the Main tab: " .. tostring(err))
+    return
+end
+
+-- Add GUI elements with error handling
+local function addGuiElements()
+    xpcall(function()
+        -- Toggle Infinite Jump
+        Tab:AddToggle({
+            Name = "Infinite Jump",
+            Default = true,
+            Callback = function(value)
+                infJumpEnabled = value
+            end
+        })
+
+        -- Slider for Speed Modification
+        Tab:AddSlider({
+            Name = "Speed Multiplier",
+            Min = 1,
+            Max = 10,
+            Default = 2,
+            Color = Color3.fromRGB(255, 255, 255),
+            Increment = 1,
+            ValueName = "x",
+            Callback = function(value)
+                speedMultiplier = value
+                local player = game:GetService("Players").LocalPlayer
+                player.Character.Humanoid.WalkSpeed = 16 * speedMultiplier
+            end
+        })
+
+        -- Toggle Spinbot
+        Tab:AddToggle({
+            Name = "Spinbot",
+            Default = false,
+            Callback = function(value)
+                spinBotEnabled = value
+            end
+        })
+
+        -- Slider for Spin Speed
+        Tab:AddSlider({
+            Name = "Spin Speed",
+            Min = 10,
+            Max = 100,
+            Default = 50,
+            Color = Color3.fromRGB(255, 255, 255),
+            Increment = 5,
+            ValueName = "Speed",
+            Callback = function(value)
+                spinSpeed = value
+            end
+        })
+    end, function(e)
+        warn("Error in adding GUI elements: " .. tostring(e))
+    end)
+end
+
+-- Execute the function with pcall
+status, err = pcall(addGuiElements)
+
+if not status then
+    warn("Failed to add GUI elements: " .. tostring(err))
+end
+
+-- Credits Tab
+local CreditsTab
+status, err = pcall(function()
+    CreditsTab = Window:MakeTab({
+        Name = "Credits",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+end)
+
+if not status then
+    warn("Failed to create the Credits tab: " .. tostring(err))
+    return
+end
+
+-- Add credits with error handling
+local function addCredits()
+    xpcall(function()
+        CreditsTab:AddParagraph("Credits", "Script by rux0_0\nDiscord: rux0_0\nSpecial thanks to OrionLib")
+    end, function(e)
+        warn("Error in adding Credits: " .. tostring(e))
+    end)
+end
+
+-- Execute the function with pcall
+status, err = pcall(addCredits)
+
+if not status then
+    warn("Failed to add Credits: " .. tostring(err))
+end
+
+-- Show Orion UI
+xpcall(function()
+    OrionLib:Init()
+end, function(e)
+    warn("Error initializing Orion UI: " .. tostring(e))
+end)
